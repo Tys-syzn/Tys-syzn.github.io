@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智学刷题 - 初中在线测评系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        
+        body { font-family: 'Noto Sans SC', sans-serif; }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .subject-math { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .subject-physics { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .subject-chemistry { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .subject-english { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .subject-chinese { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .subject-history { background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%); }
+        .subject-biology { background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); }
+        .subject-geo { background: linear-gradient(135deg, #fddb92 0%, #d1fdff 100%); }
+        
+        .option-btn {
+            transition: all 0.2s;
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: scale(1.02);
+        }
+        .option-correct {
+            background-color: #10b981 !important;
+            color: white !important;
+            border-color: #10b981 !important;
+        }
+        .option-wrong {
+            background-color: #ef4444 !important;
+            color: white !important;
+            border-color: #ef4444 !important;
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- 登录/注册模态框 -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 m-4 fade-in">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-graduation-cap text-white text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800" id="authTitle">登录</h2>
+                <p class="text-gray-500 mt-1">智学刷题 - 初中在线测评系统</p>
+            </div>
+            
+            <form id="authForm" class="space-y-4">
+                <div id="nameField" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">昵称</label>
+                    <input type="text" id="userName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" placeholder="请输入昵称">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                    <input type="text" id="username" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" placeholder="请输入用户名" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                    <input type="password" id="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" placeholder="请输入密码" required>
+                </div>
+                
+                <div id="inviteField" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">邀请码</label>
+                    <input type="text" id="inviteCode" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" placeholder="请输入邀请码">
+                    <p class="text-xs text-gray-500 mt-1">需要管理员提供的邀请码才能注册</p>
+                </div>
+                
+                <button type="submit" class="w-full gradient-bg text-white py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity">
+                    <span id="authBtnText">登录</span>
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600">
+                    <span id="authSwitchText">还没有账号？</span>
+                    <button onclick="toggleAuthMode()" class="text-indigo-600 font-medium hover:underline" id="authSwitchBtn">立即注册</button>
+                </p>
+            </div>
+            
+            <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p class="text-xs text-blue-700 text-center">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    演示账号: admin / admin (管理员) | student / 123456
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主应用界面 -->
+    <div id="app" class="hidden">
+        <!-- 顶部导航 -->
+        <nav class="glass-effect sticky top-0 z-40 border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-graduation-cap text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold text-gray-800">智学刷题</span>
+                        <span class="ml-2 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded-full" id="userRoleBadge">学生</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="hidden md:flex items-center space-x-2 text-sm text-gray-600">
+                            <i class="fas fa-fire text-orange-500"></i>
+                            <span id="streakCount">连续 3 天</span>
+                        </div>
+                        <div class="hidden md:flex items-center space-x-2 text-sm text-gray-600">
+                            <i class="fas fa-star text-yellow-500"></i>
+                            <span id="totalPoints">1250 分</span>
+                        </div>
+                        <div class="relative group">
+                            <button class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-indigo-600 text-sm"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700" id="navUsername">用户名</span>
+                                <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+                            </button>
+                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                <a onclick="showProfile()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                                    <i class="fas fa-user-circle mr-2"></i>个人中心
+                                </a>
+                                <a onclick="showHistory()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                                    <i class="fas fa-history mr-2"></i>做题记录
+                                </a>
+                                <div id="adminMenuItem" class="hidden border-t border-gray-100">
+                                    <a onclick="showAdmin()" class="block px-4 py-2 text-sm text-indigo-600 hover:bg-gray-50 cursor-pointer">
+                                        <i class="fas fa-cog mr-2"></i>管理后台
+                                    </a>
+                                </div>
+                                <div class="border-t border-gray-100">
+                                    <a onclick="logout()" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-50 cursor-pointer">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>退出登录
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            <!-- 首页 - 学科选择 -->
+            <div id="homeView" class="fade-in">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">欢迎回来，<span id="welcomeName">同学</span>！</h1>
+                    <p class="text-gray-600">选择学科开始刷题，每天进步一点点</p>
+                </div>
+
+                <!-- 统计卡片 -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-500">今日刷题</span>
+                            <i class="fas fa-calendar-day text-indigo-500"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800" id="todayCount">0</p>
+                        <p class="text-xs text-green-600 mt-1"><i class="fas fa-arrow-up mr-1"></i>较昨日 +5</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-500">正确率</span>
+                            <i class="fas fa-bullseye text-green-500"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800" id="accuracyRate">0%</p>
+                        <p class="text-xs text-gray-500 mt-1">平均正确率</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-500">总题数</span>
+                            <i class="fas fa-layer-group text-blue-500"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800" id="totalSolved">0</p>
+                        <p class="text-xs text-gray-500 mt-1">累计做题</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-500">我的排名</span>
+                            <i class="fas fa-trophy text-yellow-500"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800" id="myRank">--</p>
+                        <p class="text-xs text-gray-500 mt-1">全站排名</p>
+                    </div>
+                </div>
+
+                <!-- 学科网格 -->
+                <h2 class="text-xl font-bold text-gray-800 mb-4">选择学科</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="subjectGrid">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+
+            <!-- 题库页面 -->
+            <div id="quizView" class="hidden fade-in">
+                <div class="flex items-center mb-6">
+                    <button onclick="backToHome()" class="mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i class="fas fa-arrow-left text-gray-600"></i>
+                    </button>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800" id="quizSubjectTitle">数学</h2>
+                        <p class="text-sm text-gray-500" id="quizSubjectDesc">七年级上册 · 有理数</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- 左侧：题目 -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <!-- 进度条 -->
+                            <div class="mb-6">
+                                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>进度</span>
+                                    <span id="progressText">1 / 10</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="progressBar" class="gradient-bg h-2 rounded-full transition-all duration-300" style="width: 10%"></div>
+                                </div>
+                            </div>
+
+                            <!-- 题目内容 -->
+                            <div id="questionContainer">
+                                <div class="mb-4">
+                                    <span class="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full mb-3" id="questionType">单选题</span>
+                                    <h3 class="text-lg font-medium text-gray-800 leading-relaxed" id="questionText">题目加载中...</h3>
+                                </div>
+                                
+                                <!-- 选项 -->
+                                <div class="space-y-3" id="optionsContainer">
+                                    <!-- 动态生成 -->
+                                </div>
+                            </div>
+
+                            <!-- 解析区域 -->
+                            <div id="explanationArea" class="hidden mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div class="flex items-start">
+                                    <i class="fas fa-lightbulb text-yellow-500 mt-1 mr-3"></i>
+                                    <div>
+                                        <h4 class="font-medium text-gray-800 mb-1">答案解析</h4>
+                                        <p class="text-gray-600 text-sm leading-relaxed" id="explanationText"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 操作按钮 -->
+                            <div class="flex justify-between mt-6 pt-4 border-t border-gray-100">
+                                <button onclick="prevQuestion()" id="prevBtn" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50">
+                                    <i class="fas fa-chevron-left mr-2"></i>上一题
+                                </button>
+                                <button onclick="nextQuestion()" id="nextBtn" class="px-6 py-2 gradient-bg text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50">
+                                    下一题<i class="fas fa-chevron-right ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：题号面板 -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-24">
+                            <h3 class="font-bold text-gray-800 mb-4">答题卡</h3>
+                            <div class="grid grid-cols-5 gap-2" id="answerSheet">
+                                <!-- 动态生成 -->
+                            </div>
+                            
+                            <div class="mt-6 pt-4 border-t border-gray-100">
+                                <div class="flex items-center justify-between text-sm mb-2">
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-gray-200 rounded-full mr-2"></span>未作答</span>
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>正确</span>
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span>错误</span>
+                                </div>
+                            </div>
+
+                            <button onclick="submitQuiz()" id="submitBtn" class="w-full mt-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors hidden">
+                                <i class="fas fa-check-circle mr-2"></i>提交测评
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 结果页面 -->
+            <div id="resultView" class="hidden fade-in">
+                <div class="max-w-2xl mx-auto">
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
+                        <div class="w-24 h-24 mx-auto mb-6 relative">
+                            <svg class="w-full h-full progress-ring" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+                                <circle id="scoreCircle" cx="50" cy="50" r="45" fill="none" stroke="url(#gradient)" stroke-width="8" 
+                                    stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="round"/>
+                                <defs>
+                                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#667eea" />
+                                        <stop offset="100%" stop-color="#764ba2" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-3xl font-bold text-gray-800" id="scoreText">0</span>
+                            </div>
+                        </div>
+                        
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2" id="resultTitle">测评完成！</h2>
+                        <p class="text-gray-600 mb-6" id="resultMessage">继续加油，你可以做得更好！</p>
+                        
+                        <div class="grid grid-cols-3 gap-4 mb-8">
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="text-2xl font-bold text-gray-800" id="correctCount">0</p>
+                                <p class="text-sm text-gray-500">正确</p>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="text-2xl font-bold text-gray-800" id="wrongCount">0</p>
+                                <p class="text-sm text-gray-500">错误</p>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="text-2xl font-bold text-gray-800" id="timeUsed">0:00</p>
+                                <p class="text-sm text-gray-500">用时</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-center space-x-4">
+                            <button onclick="retryQuiz()" class="px-6 py-3 border-2 border-indigo-600 text-indigo-600 rounded-lg font-medium hover:bg-indigo-50 transition-colors">
+                                <i class="fas fa-redo mr-2"></i>重新测评
+                            </button>
+                            <button onclick="backToHome()" class="px-6 py-3 gradient-bg text-white rounded-lg font-medium hover:opacity-90 transition-opacity">
+                                <i class="fas fa-home mr-2"></i>返回首页
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 个人中心 -->
+            <div id="profileView" class="hidden fade-in">
+                <div class="max-w-4xl mx-auto">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="gradient-bg p-8 text-white">
+                            <div class="flex items-center">
+                                <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-3xl">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="ml-6">
+                                    <h2 class="text-2xl font-bold" id="profileName">用户名</h2>
+                                    <p class="text-indigo-100" id="profileRole">学生</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h3 class="font-bold text-gray-800 mb-4">学习统计</h3>
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between p-3 bg-gray-50 rounded-lg">
+                                            <span class="text-gray-600">注册时间</span>
+                                            <span class="font-medium text-gray-800" id="regDate">2024-01-01</span>
+                                        </div>
+                                        <div class="flex justify-between p-3 bg-gray-50 rounded-lg">
+                                            <span class="text-gray-600">完成测评</span>
+                                            <span class="font-medium text-gray-800" id="totalQuizzes">0 次</span>
+                                        </div>
+                                        <div class="flex justify-between p-3 bg-gray-50 rounded-lg">
+                                            <span class="text-gray-600">总正确率</span>
+                                            <span class="font-medium text-green-600" id="profileAccuracy">0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800 mb-4">学科分布</h3>
+                                    <div id="subjectStats" class="space-y-3">
+                                        <!-- 动态生成 -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 历史记录 -->
+            <div id="historyView" class="hidden fade-in">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">做题记录</h2>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日期</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">学科</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">得分</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">正确率</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">用时</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody" class="divide-y divide-gray-200">
+                                    <!-- 动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="emptyHistory" class="hidden p-8 text-center text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-3 text-gray-300"></i>
+                            <p>暂无做题记录</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 管理后台 -->
+            <div id="adminView" class="hidden fade-in">
+                <div class="max-w-6xl mx-auto">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">管理后台</h2>
+                        <div class="flex space-x-3">
+                            <button onclick="generateInviteCode()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>生成邀请码
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 统计概览 -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                            <p class="text-sm text-gray-500">注册用户</p>
+                            <p class="text-2xl font-bold text-gray-800" id="adminUserCount">0</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                            <p class="text-sm text-gray-500">今日活跃</p>
+                            <p class="text-2xl font-bold text-gray-800" id="adminActiveToday">0</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                            <p class="text-sm text-gray-500">总测评次数</p>
+                            <p class="text-2xl font-bold text-gray-800" id="adminTotalQuizzes">0</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                            <p class="text-sm text-gray-500">题目总数</p>
+                            <p class="text-2xl font-bold text-gray-800" id="adminQuestionCount">0</p>
+                        </div>
+                    </div>
+
+                    <!-- 用户管理 -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+                        <div class="px-6 py-4 border-b border-gray-100">
+                            <h3 class="font-bold text-gray-800">用户管理</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">用户名</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">昵称</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">角色</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">注册时间</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminUserTable" class="divide-y divide-gray-200">
+                                    <!-- 动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 邀请码管理 -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-100">
+                            <h3 class="font-bold text-gray-800">邀请码管理</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">邀请码</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">状态</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">创建时间</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">使用者</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminInviteTable" class="divide-y divide-gray-200">
+                                    <!-- 动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- 通知提示 -->
+    <div id="toast" class="fixed bottom-4 right-4 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <div class="bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg flex items-center">
+            <i id="toastIcon" class="fas fa-check-circle mr-2 text-green-400"></i>
+            <span id="toastMessage">操作成功</span>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 数据存储 ====================
+        const Storage = {
+            get(key) {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : null;
+            },
+            set(key, value) {
+                localStorage.setItem(key, JSON.stringify(value));
+            },
+            init() {
+                if (!this.get('users')) {
+                    this.set('users', [
+                        { id: 1, username: 'admin', password: 'admin', name: '管理员', role: 'admin', createdAt: new Date().toISOString() },
+                        { id: 2, username: 'student', password: '123456', name: '张同学', role: 'student', createdAt: new Date().toISOString() }
+                    ]);
+                }
+                if (!this.get('inviteCodes')) {
+                    this.set('inviteCodes', [
+                        { code: 'ZHIXUE2024', used: false, usedBy: null, createdAt: new Date().toISOString() }
+                    ]);
+                }
+                if (!this.get('questions')) {
+                    this.initQuestions();
+                }
+                if (!this.get('history')) {
+                    this.set('history', []);
+                }
+            },
+            initQuestions() {
+                const questions = [
+                    // 数学
+                    {
+                        id: 1, subject: 'math', grade: '7', chapter: '有理数', type: 'single',
+                        question: '下列各数中，负数是（ ）',
+                        options: ['-(-2)', '|-2|', '(-2)²', '-2²'],
+                        answer: 3,
+                        explanation: '-(-2)=2，|-2|=2，(-2)²=4，-2²=-4，所以负数是D选项。'
+                    },
+                    {
+                        id: 2, subject: 'math', grade: '7', chapter: '有理数', type: 'single',
+                        question: '计算：(-3) × (-4) = （ ）',
+                        options: ['-12', '12', '-7', '7'],
+                        answer: 1,
+                        explanation: '负数乘以负数得正数，(-3)×(-4)=12。'
+                    },
+                    {
+                        id: 3, subject: 'math', grade: '8', chapter: '一次函数', type: 'single',
+                        question: '函数 y = 2x + 1 的图像经过哪个象限？',
+                        options: ['第一、二、三象限', '第一、二、四象限', '第一、三、四象限', '第二、三、四象限'],
+                        answer: 0,
+                        explanation: 'k=2>0，b=1>0，所以图像经过第一、二、三象限。'
+                    },
+                    {
+                        id: 4, subject: 'math', grade: '9', chapter: '二次函数', type: 'single',
+                        question: '抛物线 y = x² - 4x + 3 的顶点坐标是（ ）',
+                        options: ['(2, -1)', '(-2, 1)', '(2, 1)', '(-2, -1)'],
+                        answer: 0,
+                        explanation: '顶点横坐标 x = -b/2a = 4/2 = 2，纵坐标 y = 4-8+3 = -1，所以顶点为(2,-1)。'
+                    },
+                    // 物理
+                    {
+                        id: 5, subject: 'physics', grade: '8', chapter: '力学', type: 'single',
+                        question: '下列关于力的说法正确的是（ ）',
+                        options: ['力可以脱离物体而存在', '力的作用是相互的', '只有接触的物体间才有力的作用', '力的大小可以用天平测量'],
+                        answer: 1,
+                        explanation: '力的作用是相互的，这是牛顿第三定律的基本内容。'
+                    },
+                    {
+                        id: 6, subject: 'physics', grade: '9', chapter: '电学', type: 'single',
+                        question: '串联电路中，总电阻与各分电阻的关系是（ ）',
+                        options: ['总电阻等于各分电阻倒数之和', '总电阻等于各分电阻之和', '总电阻等于各分电阻之积', '总电阻等于各分电阻之差'],
+                        answer: 1,
+                        explanation: '串联电路总电阻 R = R₁ + R₂ + ... + Rₙ。'
+                    },
+                    // 化学
+                    {
+                        id: 7, subject: 'chemistry', grade: '9', chapter: '酸碱盐', type: 'single',
+                        question: '下列物质属于酸的是（ ）',
+                        options: ['NaOH', 'HCl', 'NaCl', 'CaO'],
+                        answer: 1,
+                        explanation: 'HCl（盐酸）电离时生成的阳离子全部是氢离子，属于酸。'
+                    },
+                    {
+                        id: 8, subject: 'chemistry', grade: '9', chapter: '化学方程式', type: 'single',
+                        question: '2H₂ + O₂ → 2H₂O 属于哪种反应类型？',
+                        options: ['分解反应', '化合反应', '置换反应', '复分解反应'],
+                        answer: 1,
+                        explanation: '两种物质生成一种物质，属于化合反应。'
+                    },
+                    // 英语
+                    {
+                        id: 9, subject: 'english', grade: '7', chapter: '语法', type: 'single',
+                        question: 'She ____ to school every day.',
+                        options: ['go', 'goes', 'going', 'went'],
+                        answer: 1,
+                        explanation: '主语是第三人称单数，一般现在时动词要加-es。'
+                    },
+                    {
+                        id: 10, subject: 'english', grade: '8', chapter: '词汇', type: 'single',
+                        question: '"Look forward to" 中的 "to" 是（ ）',
+                        options: ['不定式符号', '介词', '连词', '副词'],
+                        answer: 1,
+                        explanation: 'look forward to 中的 to 是介词，后面接名词或动名词。'
+                    },
+                    // 语文
+                    {
+                        id: 11, subject: 'chinese', grade: '7', chapter: '古诗词', type: 'single',
+                        question: '"采菊东篱下，悠然见南山"出自哪位诗人？',
+                        options: ['李白', '杜甫', '陶渊明', '王维'],
+                        answer: 2,
+                        explanation: '此句出自陶渊明的《饮酒·其五》。'
+                    },
+                    {
+                        id: 12, subject: 'chinese', grade: '8', chapter: '文言文', type: 'single',
+                        question: '"之"在下列哪句中作代词？',
+                        options: ['学而时习之', '水陆草木之花', '予独爱莲之出淤泥', '何陋之有'],
+                        answer: 0,
+                        explanation: '"学而时习之"中的"之"代指学习的内容，作代词。'
+                    },
+                    // 历史
+                    {
+                        id: 13, subject: 'history', grade: '7', chapter: '中国古代史', type: 'single',
+                        question: '中国历史上第一个统一的封建王朝是（ ）',
+                        options: ['夏朝', '商朝', '周朝', '秦朝'],
+                        answer: 3,
+                        explanation: '公元前221年，秦始皇统一六国，建立秦朝。'
+                    },
+                    // 生物
+                    {
+                        id: 14, subject: 'biology', grade: '7', chapter: '细胞', type: 'single',
+                        question: '植物细胞特有的结构是（ ）',
+                        options: ['细胞膜', '细胞核', '细胞壁', '线粒体'],
+                        answer: 2,
+                        explanation: '细胞壁是植物细胞特有的结构，动物细胞没有。'
+                    },
+                    // 地理
+                    {
+                        id: 15, subject: 'geo', grade: '7', chapter: '地球与地图', type: 'single',
+                        question: '地球自转产生的地理现象是（ ）',
+                        options: ['四季变化', '昼夜交替', '五带划分', '昼夜长短变化'],
+                        answer: 1,
+                        explanation: '地球自转产生昼夜交替，公转产生四季变化。'
+                    }
+                ];
+                this.set('questions', questions);
+            }
+        };
+
+        // ==================== 状态管理 ====================
+        let currentUser = null;
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = {};
+        let quizStartTime = null;
+        let isAuthMode = 'login'; // 'login' or 'register'
+
+        const subjects = [
+            { id: 'math', name: '数学', icon: 'fa-square-root-alt', color: 'subject-math', desc: '代数、几何、函数', grades: ['7', '8', '9'] },
+            { id: 'physics', name: '物理', icon: 'fa-atom', color: 'subject-physics', desc: '力学、光学、电学', grades: ['8', '9'] },
+            { id: 'chemistry', name: '化学', icon: 'fa-flask', color: 'subject-chemistry', desc: '元素、反应、实验', grades: ['9'] },
+            { id: 'english', name: '英语', icon: 'fa-language', color: 'subject-english', desc: '语法、词汇、阅读', grades: ['7', '8', '9'] },
+            { id: 'chinese', name: '语文', icon: 'fa-book', color: 'subject-chinese', desc: '古诗文、阅读、写作', grades: ['7', '8', '9'] },
+            { id: 'history', name: '历史', icon: 'fa-landmark', color: 'subject-history', desc: '中国古代史、世界史', grades: ['7', '8', '9'] },
+            { id: 'biology', name: '生物', icon: 'fa-dna', color: 'subject-biology', desc: '细胞、遗传、生态', grades: ['7', '8'] },
+            { id: 'geo', name: '地理', icon: 'fa-globe-asia', color: 'subject-geo', desc: '自然地理、人文地理', grades: ['7', '8'] }
+        ];
+
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            Storage.init();
+            checkLoginStatus();
+        });
+
+        function checkLoginStatus() {
+            const session = Storage.get('currentSession');
+            if (session && session.expires > Date.now()) {
+                currentUser = session.user;
+                showApp();
+            } else {
+                showAuthModal();
+            }
+        }
+
+        // ==================== 认证功能 ====================
+        function showAuthModal() {
+            document.getElementById('authModal').classList.remove('hidden');
+            document.getElementById('app').classList.add('hidden');
+        }
+
+        function toggleAuthMode() {
+            isAuthMode = isAuthMode === 'login' ? 'register' : 'login';
+            const isRegister = isAuthMode === 'register';
+            
+            document.getElementById('authTitle').textContent = isRegister ? '注册' : '登录';
+            document.getElementById('authBtnText').textContent = isRegister ? '注册' : '登录';
+            document.getElementById('authSwitchText').textContent = isRegister ? '已有账号？' : '还没有账号？';
+            document.getElementById('authSwitchBtn').textContent = isRegister ? '立即登录' : '立即注册';
+            
+            document.getElementById('nameField').classList.toggle('hidden', !isRegister);
+            document.getElementById('inviteField').classList.toggle('hidden', !isRegister);
+        }
+
+        document.getElementById('authForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (isAuthMode === 'login') {
+                login(username, password);
+            } else {
+                const name = document.getElementById('userName').value.trim();
+                const inviteCode = document.getElementById('inviteCode').value.trim();
+                register(username, password, name, inviteCode);
+            }
+        });
+
+        function login(username, password) {
+            const users = Storage.get('users');
+            const user = users.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                Storage.set('currentSession', {
+                    user: user,
+                    expires: Date.now() + 7 * 24 * 60 * 60 * 1000
+                });
+                showToast('登录成功', 'success');
+                showApp();
+            } else {
+                showToast('用户名或密码错误', 'error');
+            }
+        }
+
+        function register(username, password, name, inviteCode) {
+            const users = Storage.get('users');
+            
+            if (users.find(u => u.username === username)) {
+                showToast('用户名已存在', 'error');
+                return;
+            }
+            
+            if (!name) {
+                showToast('请输入昵称', 'error');
+                return;
+            }
+            
+            // 验证邀请码
+            const inviteCodes = Storage.get('inviteCodes');
+            const codeIndex = inviteCodes.findIndex(c => c.code === inviteCode && !c.used);
+            
+            if (!inviteCode || codeIndex === -1) {
+                showToast('邀请码无效或已被使用', 'error');
+                return;
+            }
+            
+            const newUser = {
+                id: Date.now(),
+                username,
+                password,
+                name: name || username,
+                role: 'student',
+                createdAt: new Date().toISOString()
+            };
+            
+            users.push(newUser);
+            Storage.set('users', users);
+            
+            // 标记邀请码已使用
+            inviteCodes[codeIndex].used = true;
+            inviteCodes[codeIndex].usedBy = username;
+            Storage.set('inviteCodes', inviteCodes);
+            
+            showToast('注册成功，请登录', 'success');
+            toggleAuthMode();
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentSession');
+            showAuthModal();
+            showToast('已退出登录', 'info');
+        }
+
+        // ==================== 应用界面 ====================
+        function showApp() {
+            document.getElementById('authModal').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            
+            // 更新用户信息
+            document.getElementById('navUsername').textContent = currentUser.name;
+            document.getElementById('welcomeName').textContent = currentUser.name;
+            document.getElementById('userRoleBadge').textContent = currentUser.role === 'admin' ? '管理员' : '学生';
+            
+            if (currentUser.role === 'admin') {
+                document.getElementById('adminMenuItem').classList.remove('hidden');
+            }
+            
+            renderSubjects();
+            updateStats();
+        }
+
+        function renderSubjects() {
+            const grid = document.getElementById('subjectGrid');
+            grid.innerHTML = subjects.map(subject => `
+                <div onclick="startQuiz('${subject.id}')" class="card-hover bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer group">
+                    <div class="${subject.color} h-32 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                        <i class="fas ${subject.icon} text-white text-4xl"></i>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-lg font-bold text-gray-800 mb-1">${subject.name}</h3>
+                        <p class="text-sm text-gray-500 mb-3">${subject.desc}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-400">${subject.grades.length}个年级</span>
+                            <span class="text-indigo-600 text-sm font-medium group-hover:translate-x-1 transition-transform">
+                                开始刷题 <i class="fas fa-arrow-right ml-1"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            const history = Storage.get('history') || [];
+            const userHistory = history.filter(h => h.userId === currentUser.id);
+            
+            const today = new Date().toDateString();
+            const todayCount = userHistory.filter(h => new Date(h.date).toDateString() === today).reduce((sum, h) => sum + h.totalQuestions, 0);
+            
+            const totalSolved = userHistory.reduce((sum, h) => sum + h.totalQuestions, 0);
+            const totalCorrect = userHistory.reduce((sum, h) => sum + h.correctCount, 0);
+            const accuracy = totalSolved > 0 ? Math.round((totalCorrect / totalSolved) * 100) : 0;
+            
+            document.getElementById('todayCount').textContent = todayCount;
+            document.getElementById('totalSolved').textContent = totalSolved;
+            document.getElementById('accuracyRate').textContent = accuracy + '%';
+            
+            // 模拟排名
+            document.getElementById('myRank').textContent = totalSolved > 0 ? Math.floor(Math.random() * 50) + 1 : '--';
+        }
+
+        // ==================== 刷题功能 ====================
+        function startQuiz(subjectId) {
+            const subject = subjects.find(s => s.id === subjectId);
+            const allQuestions = Storage.get('questions');
+            
+            // 筛选该学科的题目（每个学科随机选10题或全部）
+            currentQuestions = allQuestions.filter(q => q.subject === subjectId);
+            if (currentQuestions.length === 0) {
+                showToast('该学科暂无题目', 'error');
+                return;
+            }
+            
+            // 随机打乱并取最多10题
+            currentQuestions = shuffleArray([...currentQuestions]).slice(0, 10);
+            currentQuestionIndex = 0;
+            userAnswers = {};
+            quizStartTime = Date.now();
+            
+            document.getElementById('quizSubjectTitle').textContent = subject.name;
+            document.getElementById('quizSubjectDesc').textContent = `${subject.grades.join('、')}年级 · ${subject.desc}`;
+            
+            showView('quizView');
+            renderQuestion();
+            renderAnswerSheet();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function renderQuestion() {
+            const q = currentQuestions[currentQuestionIndex];
+            const total = currentQuestions.length;
+            
+            document.getElementById('progressText').textContent = `${currentQuestionIndex + 1} / ${total}`;
+            document.getElementById('progressBar').style.width = `${((currentQuestionIndex + 1) / total) * 100}%`;
+            
+            document.getElementById('questionType').textContent = q.type === 'single' ? '单选题' : '多选题';
+            document.getElementById('questionText').textContent = `${currentQuestionIndex + 1}. ${q.question}`;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            const labels = ['A', 'B', 'C', 'D'];
+            
+            optionsContainer.innerHTML = q.options.map((opt, idx) => {
+                const isAnswered = userAnswers[currentQuestionIndex] !== undefined;
+                const isSelected = userAnswers[currentQuestionIndex] === idx;
+                const isCorrect = idx === q.answer;
+                
+                let btnClass = 'option-btn w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ';
+                
+                if (isAnswered) {
+                    if (isCorrect) {
+                        btnClass += 'option-correct border-green-500';
+                    } else if (isSelected) {
+                        btnClass += 'option-wrong border-red-500';
+                    } else {
+                        btnClass += 'border-gray-200 bg-gray-50 text-gray-400';
+                    }
+                } else {
+                    btnClass += 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50';
+                }
+                
+                return `
+                    <button onclick="selectAnswer(${idx})" class="${btnClass}" ${isAnswered ? 'disabled' : ''}>
+                        <span class="inline-block w-8 h-8 rounded-full bg-gray-100 text-gray-600 font-bold text-center leading-8 mr-3 ${isAnswered && (isCorrect || isSelected) ? 'text-white !bg-white/20' : ''}">${labels[idx]}</span>
+                        <span class="text-gray-700">${opt}</span>
+                        ${isAnswered && isCorrect ? '<i class="fas fa-check ml-auto text-green-600"></i>' : ''}
+                        ${isAnswered && isSelected && !isCorrect ? '<i class="fas fa-times ml-auto text-red-600"></i>' : ''}
+                    </button>
+                `;
+            }).join('');
+            
+            // 解析区域
+            const explanationArea = document.getElementById('explanationArea');
+            if (isAnswered) {
+                explanationArea.classList.remove('hidden');
+                document.getElementById('explanationText').textContent = q.explanation;
+            } else {
+                explanationArea.classList.add('hidden');
+            }
+            
+            // 按钮状态
+            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+            document.getElementById('nextBtn').textContent = currentQuestionIndex === total - 1 ? '完成' : '下一题';
+            document.getElementById('nextBtn').innerHTML = currentQuestionIndex === total - 1 ? '完成<i class="fas fa-check ml-2"></i>' : '下一题<i class="fas fa-chevron-right ml-2"></i>';
+            
+            // 最后一题显示提交按钮
+            if (currentQuestionIndex === total - 1 && Object.keys(userAnswers).length === total) {
+                document.getElementById('submitBtn').classList.remove('hidden');
+            } else {
+                document.getElementById('submitBtn').classList.add('hidden');
+            }
+        }
+
+        function selectAnswer(index) {
+            if (userAnswers[currentQuestionIndex] !== undefined) return;
+            
+            userAnswers[currentQuestionIndex] = index;
+            renderQuestion();
+            renderAnswerSheet();
+            
+            // 自动下一题（可选）
+            // setTimeout(() => nextQuestion(), 1000);
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < currentQuestions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else if (Object.keys(userAnswers).length === currentQuestions.length) {
+                submitQuiz();
+            }
+        }
+
+        function renderAnswerSheet() {
+            const sheet = document.getElementById('answerSheet');
+            sheet.innerHTML = currentQuestions.map((q, idx) => {
+                const answered = userAnswers[idx] !== undefined;
+                const correct = answered && userAnswers[idx] === q.answer;
+                
+                let bgClass = 'bg-gray-100 text-gray-600';
+                if (answered) {
+                    bgClass = correct ? 'bg-green-500 text-white' : 'bg-red-500 text-white';
+                }
+                
+                return `
+                    <button onclick="jumpToQuestion(${idx})" class="w-10 h-10 rounded-lg ${bgClass} font-medium text-sm hover:opacity-80 transition-opacity">
+                        ${idx + 1}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function jumpToQuestion(index) {
+            currentQuestionIndex = index;
+            renderQuestion();
+        }
+
+        function submitQuiz() {
+            const endTime = Date.now();
+            const timeUsed = Math.floor((endTime - quizStartTime) / 1000);
+            const minutes = Math.floor(timeUsed / 60);
+            const seconds = timeUsed % 60;
+            
+            let correct = 0;
+            currentQuestions.forEach((q, idx) => {
+                if (userAnswers[idx] === q.answer) correct++;
+            });
+            
+            const wrong = currentQuestions.length - correct;
+            const score = Math.round((correct / currentQuestions.length) * 100);
+            
+            // 保存历史
+            const history = Storage.get('history') || [];
+            history.unshift({
+                id: Date.now(),
+                userId: currentUser.id,
+                subject: currentQuestions[0].subject,
+                subjectName: subjects.find(s => s.id === currentQuestions[0].subject).name,
+                score,
+                correctCount: correct,
+                wrongCount: wrong,
+                totalQuestions: currentQuestions.length,
+                timeUsed: `${minutes}:${seconds.toString().padStart(2, '0')}`,
+                date: new Date().toISOString()
+            });
+            Storage.set('history', history);
+            
+            // 显示结果
+            showResult(score, correct, wrong, `${minutes}:${seconds.toString().padStart(2, '0')}`);
+        }
+
+        function showResult(score, correct, wrong, timeStr) {
+            showView('resultView');
+            
+            // 动画显示分数
+            const circle = document.getElementById('scoreCircle');
+            const circumference = 2 * Math.PI * 45;
+            const offset = circumference - (score / 100) * circumference;
+            
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+            }, 100);
+            
+            // 数字滚动
+            let currentScore = 0;
+            const timer = setInterval(() => {
+                currentScore += 2;
+                if (currentScore >= score) {
+                    currentScore = score;
+                    clearInterval(timer);
+                }
+                document.getElementById('scoreText').textContent = currentScore;
+            }, 20);
+            
+            document.getElementById('correctCount').textContent = correct;
+            document.getElementById('wrongCount').textContent = wrong;
+            document.getElementById('timeUsed').textContent = timeStr;
+            
+            // 评价语
+            let message = '';
+            if (score >= 90) message = '太棒了！成绩优异！';
+            else if (score >= 80) message = '做得很好，继续保持！';
+            else if (score >= 60) message = '及格了，还有提升空间！';
+            else message = '继续加油，你可以做得更好！';
+            
+            document.getElementById('resultMessage').textContent = message;
+            
+            updateStats();
+        }
+
+        function retryQuiz() {
+            const subjectId = currentQuestions[0]?.subject;
+            if (subjectId) startQuiz(subjectId);
+        }
+
+        // ==================== 页面导航 ====================
+        function showView(viewId) {
+            ['homeView', 'quizView', 'resultView', 'profileView', 'historyView', 'adminView'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        function backToHome() {
+            showView('homeView');
+            updateStats();
+        }
+
+        function showProfile() {
+            const user = currentUser;
+            document.getElementById('profileName').textContent = user.name;
+            document.getElementById('profileRole').textContent = user.role === 'admin' ? '管理员' : '学生';
+            document.getElementById('regDate').textContent = new Date(user.createdAt).toLocaleDateString();
+            
+            const history = Storage.get('history') || [];
+            const userHistory = history.filter(h => h.userId === user.id);
+            
+            document.getElementById('totalQuizzes').textContent = userHistory.length + ' 次';
+            
+            const totalCorrect = userHistory.reduce((sum, h) => sum + h.correctCount, 0);
+            const totalQuestions = userHistory.reduce((sum, h) => sum + h.totalQuestions, 0);
+            document.getElementById('profileAccuracy').textContent = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) + '%' : '0%';
+            
+            // 学科分布
+            const subjectCount = {};
+            userHistory.forEach(h => {
+                subjectCount[h.subject] = (subjectCount[h.subject] || 0) + 1;
+            });
+            
+            const subjectStats = document.getElementById('subjectStats');
+            if (Object.keys(subjectCount).length === 0) {
+                subjectStats.innerHTML = '<p class="text-gray-500 text-sm">暂无数据</p>';
+            } else {
+                subjectStats.innerHTML = Object.entries(subjectCount).map(([subj, count]) => {
+                    const subject = subjects.find(s => s.id === subj);
+                    const percentage = Math.round((count / userHistory.length) * 100);
+                    return `
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-600">${subject?.name || subj}</span>
+                                <span class="text-gray-800 font-medium">${count}次</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="gradient-bg h-2 rounded-full" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            showView('profileView');
+        }
+
+        function showHistory() {
+            const history = Storage.get('history') || [];
+            const userHistory = history.filter(h => h.userId === currentUser.id);
+            const tbody = document.getElementById('historyTableBody');
+            const emptyDiv = document.getElementById('emptyHistory');
+            
+            if (userHistory.length === 0) {
+                tbody.innerHTML = '';
+                emptyDiv.classList.remove('hidden');
+            } else {
+                emptyDiv.classList.add('hidden');
+                tbody.innerHTML = userHistory.map(h => `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(h.date).toLocaleString()}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${h.subjectName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${h.score >= 60 ? 'text-green-600' : 'text-red-600'}">${h.score}分</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${Math.round((h.correctCount / h.totalQuestions) * 100)}%</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${h.timeUsed}</td>
+                    </tr>
+                `).join('');
+            }
+            
+            showView('historyView');
+        }
+
+        // ==================== 管理后台 ====================
+        function showAdmin() {
+            if (currentUser.role !== 'admin') {
+                showToast('无权访问', 'error');
+                return;
+            }
+            
+            updateAdminStats();
+            showView('adminView');
+        }
+
+        function updateAdminStats() {
+            const users = Storage.get('users') || [];
+            const history = Storage.get('history') || [];
+            const questions = Storage.get('questions') || [];
+            const inviteCodes = Storage.get('inviteCodes') || [];
+            
+            document.getElementById('adminUserCount').textContent = users.length;
+            document.getElementById('adminTotalQuizzes').textContent = history.length;
+            document.getElementById('adminQuestionCount').textContent = questions.length;
+            
+            const today = new Date().toDateString();
+            const activeToday = history.filter(h => new Date(h.date).toDateString() === today).length;
+            document.getElementById('adminActiveToday').textContent = activeToday;
+            
+            // 用户表
+            document.getElementById('adminUserTable').innerHTML = users.map(u => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${u.username}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${u.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}">
+                            ${u.role === 'admin' ? '管理员' : '学生'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(u.createdAt).toLocaleDateString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        ${u.role !== 'admin' ? `<button onclick="deleteUser(${u.id})" class="text-red-600 hover:text-red-900">删除</button>` : '-'}
+                    </td>
+                </tr>
+            `).join('');
+            
+            // 邀请码表
+            document.getElementById('adminInviteTable').innerHTML = inviteCodes.map(c => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">${c.code}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${c.used ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                            ${c.used ? '已使用' : '未使用'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(c.createdAt).toLocaleDateString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${c.usedBy || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function generateInviteCode() {
+            const codes = Storage.get('inviteCodes') || [];
+            const newCode = 'ZX' + Math.random().toString(36).substring(2, 8).toUpperCase();
+            
+            codes.push({
+                code: newCode,
+                used: false,
+                usedBy: null,
+                createdAt: new Date().toISOString()
+            });
+            
+            Storage.set('inviteCodes', codes);
+            updateAdminStats();
+            showToast(`邀请码已生成: ${newCode}`, 'success');
+        }
+
+        function deleteUser(userId) {
+            if (!confirm('确定要删除该用户吗？')) return;
+            
+            let users = Storage.get('users') || [];
+            users = users.filter(u => u.id !== userId);
+            Storage.set('users', users);
+            
+            updateAdminStats();
+            showToast('用户已删除', 'success');
+        }
+
+        // ==================== 工具函数 ====================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+            
+            msg.textContent = message;
+            
+            const icons = {
+                success: 'fa-check-circle text-green-400',
+                error: 'fa-times-circle text-red-400',
+                info: 'fa-info-circle text-blue-400'
+            };
+            
+            icon.className = `fas mr-2 ${icons[type]}`;
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('quizView').classList.contains('hidden')) return;
+            
+            if (e.key === 'ArrowLeft') prevQuestion();
+            if (e.key === 'ArrowRight') nextQuestion();
+            if (['1', '2', '3', '4'].includes(e.key)) {
+                selectAnswer(parseInt(e.key) - 1);
+            }
+        });
+    </script>
+</body>
+</html>
